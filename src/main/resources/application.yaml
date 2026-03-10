@@ -4,3 +4,13 @@ server:
 spring:
   application:
     name: shipment-tracking-gateway
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:gatewaydb}
+    username: ${DB_USER:gateway}
+    password: ${DB_PASS:gateway}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
