@@ -11,6 +11,7 @@ import com.example.gateway.model.ShipmentStatus;
 import com.example.gateway.repository.ShipmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,9 @@ public class TrackingService {
         return fetchTracking(request.getTrackingNumber(), request.getCarrier());
     }
 
+    @Cacheable(value = "tracking", key = "#trackingNumber")
     public TrackingResponse getTracking(String trackingNumber) {
+        log.debug("Cache miss for trackingNumber={}", trackingNumber);
         Shipment shipment = shipmentRepository.findByTrackingNumber(trackingNumber)
                 .orElseThrow(() -> new ShipmentNotFoundException(trackingNumber));
         return fetchTracking(trackingNumber, shipment.getCarrier().name());
