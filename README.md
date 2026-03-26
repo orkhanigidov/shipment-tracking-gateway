@@ -113,6 +113,14 @@ curl -X POST http://localhost:8080/auth/token \
 # → 401 Unauthorized
 ```
 
+## API Documentation (Swagger UI)
+
+Interactive API docs are available at:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
 ## Running Tests
 
 ```bash
