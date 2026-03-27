@@ -1,8 +1,10 @@
 # Shipment Tracking Gateway
 
-A learning project to practice JWT authentication, rate limiting with Bucket4j, Redis caching, and the Strategy design pattern (carrier adapters).
+A learning project to practice JWT authentication, rate limiting with Bucket4j, Redis caching, Elasticsearch for
+advanced searching, and the Strategy design pattern (carrier adapters).
 
-The gateway accepts shipment tracking requests, authenticates them via JWT, enforces a per-user rate limit, and routes each request to the appropriate carrier adapter (DHL, FedEx, UPS).
+The gateway accepts shipment tracking requests, authenticates them via JWT, enforces a per-user rate limit, and routes
+each request to the appropriate carrier adapter (DHL, FedEx, UPS).
 
 ## Architecture
 
@@ -35,6 +37,7 @@ Client
 - Bucket4j - in-memory rate limiting (20 requests/min per user)
 - Redis - caches tracking responses for 5 minutes
 - PostgreSQL + Flyway - stores shipment records
+- Elasticsearch - indexes shipment data for fast, multi-field searching
 - Testcontainers - integration tests with real PostgreSQL
 
 ## Getting Started
@@ -48,6 +51,7 @@ docker compose up --build
 ## Try It Out
 
 **1. Get a JWT token:**
+
 ```bash
 curl -X POST http://localhost:8080/auth/token \
   -H "Content-Type: application/json" \
@@ -55,13 +59,18 @@ curl -X POST http://localhost:8080/auth/token \
 ```
 
 Response:
+
 ```json
-{"token": "...", "type": "Bearer"}
+{
+  "token": "...",
+  "type": "Bearer"
+}
 ```
 
 Available test users: `alice / key-alice-001`, `bob / key-bob-002`
 
 **2. Register a shipment:**
+
 ```bash
 TOKEN="..."
 
@@ -77,6 +86,7 @@ curl -X POST http://localhost:8080/shipments \
 ```
 
 Response:
+
 ```json
 {
   "trackingNumber": "DHL123456789",
@@ -90,12 +100,37 @@ Response:
 ```
 
 **3. Track the shipment (cached after first call):**
+
 ```bash
 curl http://localhost:8080/shipments/DHL123456789 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-**4. Test rate limiting (run 21 times quickly):**
+**4. Search shipments (Elasticsearch):**
+
+By Location:
+
+```bash
+curl "http://localhost:8080/shipments/search/location?q=Hamburg" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+By Carrier:
+
+```bash
+curl "http://localhost:8080/shipments/search/carrier?q=DHL" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+By Status:
+
+```bash
+curl "http://localhost:8080/shipments/search/status?q=IN_TRANSIT" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**5. Test rate limiting (run 21 times quickly):**
+
 ```bash
 for i in {1..21}; do
   curl -s -o /dev/null -w "%{http_code}\n" \
@@ -105,7 +140,8 @@ done
 # First 20: 200, request 21: 429 Too Many Requests
 ```
 
-**5. Test with wrong credentials:**
+**6. Test with wrong credentials:**
+
 ```bash
 curl -X POST http://localhost:8080/auth/token \
   -H "Content-Type: application/json" \

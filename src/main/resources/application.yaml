@@ -22,6 +22,8 @@ spring:
     type: redis
     redis:
       time-to-live: 300000 # 5 minutes
+  elasticsearch:
+    uris: http://${ES_HOST:localhost}:${ES_PORT:9200}
 
 app:
   jwt:
