@@ -1,5 +1,7 @@
 # Shipment Tracking Gateway
 
+[![CI/CD Pipeline](https://github.com/orkhanigidov/shipment-tracking-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/orkhanigidov/shipment-tracking-gateway/actions/workflows/ci.yml)
+
 A learning project to practice JWT authentication, rate limiting with Bucket4j, Redis caching, Elasticsearch for
 advanced searching, and the Strategy design pattern (carrier adapters).
 
@@ -162,6 +164,18 @@ http://localhost:8080/swagger-ui.html
 ```bash
 ./gradlew test
 ```
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration. The pipeline automatically triggers on every push and pull
+request to the `master` branch.
+
+It performs the following steps:
+
+1. Sets up the Java 17 environment.
+2. Caches Gradle dependencies to speed up builds.
+3. Runs all unit and integration tests (spinning up PostgreSQL via Testcontainers).
+4. Builds the Docker image to ensure the `Dockerfile` remains valid.
 
 ## Supported Carriers
 
