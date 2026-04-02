@@ -29,3 +29,4 @@ app:
   jwt:
     secret: ${JWT_SECRET:my-very-secret-key-that-is-long-enough-32chars}
     expiration-ms: 3600000
+    refresh-expiration-ms: 604800000 # 7 days

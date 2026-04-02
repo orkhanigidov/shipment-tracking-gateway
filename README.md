@@ -65,8 +65,19 @@ Response:
 ```json
 {
   "token": "...",
+  "refreshToken": "...",
   "type": "Bearer"
 }
+```
+
+**1.1 Refresh the JWT token:**
+
+When the access token expires, use the refresh token to get a new pair:
+
+```bash
+curl -X POST http://localhost:8080/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken": "your_refresh_token_here"}'
 ```
 
 Available test users: `alice / key-alice-001`, `bob / key-bob-002`
@@ -189,4 +200,3 @@ It performs the following steps:
 
 - Carrier adapters are mocked - no real API calls
 - Rate limiting is in-memory (resets on restart); for production use Redis-backed Bucket4j
-- No token refresh mechanism

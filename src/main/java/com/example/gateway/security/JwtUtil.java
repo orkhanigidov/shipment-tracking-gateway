@@ -22,14 +22,25 @@ public class JwtUtil {
     @Value("${app.jwt.expiration-ms:3600000}")
     private long expirationMs;
 
-    public String generateToken(String username) {
+    @Value("${app.jwt.refresh-expiration-ms:604800000}")
+    private long refreshExpirationMs;
+
+    private String buildToken(String username, long expiration) {
         Key key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String generateToken(String username) {
+        return buildToken(username, expirationMs);
+    }
+
+    public String generateRefreshToken(String username) {
+        return buildToken(username, refreshExpirationMs);
     }
 
     public String extractUsername(String token) {

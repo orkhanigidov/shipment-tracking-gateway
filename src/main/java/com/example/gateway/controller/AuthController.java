@@ -1,5 +1,6 @@
 package com.example.gateway.controller;
 
+import com.example.gateway.dto.RefreshTokenRequest;
 import com.example.gateway.dto.TokenRequest;
 import com.example.gateway.dto.TokenResponse;
 import com.example.gateway.model.User;
@@ -24,15 +25,15 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Obtain a JWT token using username and API key")
+@Tag(name = "Authentication", description = "Obtain and refresh JWT tokens")
 public class AuthController {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
-    @Operation(summary = "Issue a JWT token", description = "Validates username and API key, returns a signed Bearer token")
+    @Operation(summary = "Issue a JWT token", description = "Validates username and API key, returns an access and refresh token")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Token issued successfully"),
+            @ApiResponse(responseCode = "200", description = "Tokens issued successfully"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/token")
@@ -44,7 +45,27 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
-        log.info("Issued token for username={}", request.getUsername());
-        return new TokenResponse(jwtUtil.generateToken(request.getUsername()));
+        log.info("Issued tokens for username={}", request.getUsername());
+        return new TokenResponse(jwtUtil.generateToken(request.getUsername()), jwtUtil.generateRefreshToken(request.getUsername()));
+    }
+
+    @Operation(summary = "Refresh a JWT token", description = "Provides a new access and refresh token pair using a valid refresh token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tokens refreshed successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
+    })
+    @PostMapping("/refresh")
+    public TokenResponse refresh(@RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        if (refreshToken != null && jwtUtil.isValid(refreshToken)) {
+            String username = jwtUtil.extractUsername(refreshToken);
+            log.info("Refreshed tokens for username={}", username);
+
+            return new TokenResponse(jwtUtil.generateToken(username), jwtUtil.generateRefreshToken(username));
+        }
+
+        log.warn("Failed token refresh attempt - invalid or expired token");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
     }
 }
