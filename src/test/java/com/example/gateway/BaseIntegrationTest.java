@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
@@ -64,8 +65,17 @@ public abstract class BaseIntegrationTest {
             TokenRequest req = new TokenRequest();
             req.setUsername("alice");
             req.setApiKey("key-alice-001");
-            TokenResponse resp = restTemplate.postForEntity("/auth/token", req, TokenResponse.class).getBody();
-            bearerToken = "Bearer " + resp.getToken();
+
+            ResponseEntity<TokenResponse> response = restTemplate.postForEntity("/auth/token", req, TokenResponse.class);
+
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null || response.getBody().getToken() == null) {
+                throw new IllegalStateException(
+                        "Failed to obtain JWT token for tests! Status: " + response.getStatusCode() +
+                                ". Please check the PostgreSQL connection and Auth logic."
+                );
+            }
+
+            bearerToken = "Bearer " + response.getBody().getToken();
         }
     }
 

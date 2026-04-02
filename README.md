@@ -38,7 +38,7 @@ Client
 - Spring Security - stateless JWT authentication
 - Bucket4j - in-memory rate limiting (20 requests/min per user)
 - Redis - caches tracking responses for 5 minutes
-- PostgreSQL + Flyway - stores shipment records
+- PostgreSQL + Flyway - stores shipment records and user API keys
 - Elasticsearch - indexes shipment data for fast, multi-field searching
 - Testcontainers - integration tests with real PostgreSQL
 
@@ -189,5 +189,4 @@ It performs the following steps:
 
 - Carrier adapters are mocked - no real API calls
 - Rate limiting is in-memory (resets on restart); for production use Redis-backed Bucket4j
-- API keys are hardcoded in `AuthController` - should come from a database
 - No token refresh mechanism
