@@ -2,7 +2,8 @@ package com.example.gateway.controller;
 
 import com.example.gateway.dto.ShipmentRequest;
 import com.example.gateway.dto.TrackingResponse;
-import com.example.gateway.service.TrackingService;
+import com.example.gateway.service.LiveTrackingService;
+import com.example.gateway.service.ShipmentRegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,7 +19,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Shipment Tracking", description = "Register shipments and retrieve tracking information")
 public class TrackingController {
 
-    private final TrackingService trackingService;
+    private final ShipmentRegistrationService registrationService;
+    private final LiveTrackingService liveTrackingService;
 
     @Operation(summary = "Register a shipment", description = "Creates a new shipment record and returns initial tracking info")
     @ApiResponses({
@@ -31,7 +33,8 @@ public class TrackingController {
     @PostMapping("/shipments")
     @ResponseStatus(HttpStatus.CREATED)
     public TrackingResponse register(@RequestBody ShipmentRequest request) {
-        return trackingService.registerAndTrack(request);
+        registrationService.register(request);
+        return liveTrackingService.getTracking(request.getTrackingNumber());
     }
 
     @Operation(summary = "Track a shipment", description = "Returns cached (Redis, TTL 5 min) tracking status for the given tracking number")
@@ -46,6 +49,6 @@ public class TrackingController {
     public TrackingResponse track(
             @Parameter(description = "Carrier-specific tracking number, e.g. DHL123456789")
             @PathVariable String trackingNumber) {
-        return trackingService.getTracking(trackingNumber);
+        return liveTrackingService.getTracking(trackingNumber);
     }
 }
