@@ -19,4 +19,8 @@ public class User {
 
     @Column(nullable = false)
     private String apiKey;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Tier tier = Tier.FREE;
 }

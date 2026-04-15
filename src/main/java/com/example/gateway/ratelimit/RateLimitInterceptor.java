@@ -1,24 +1,27 @@
 package com.example.gateway.ratelimit;
 
-import io.github.bucket4j.Bandwidth;
+import com.example.gateway.model.Tier;
+import com.example.gateway.model.User;
+import com.example.gateway.repository.UserRepository;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RateLimitInterceptor implements HandlerInterceptor {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final UserRepository userRepository;
 
     @Override
     public boolean preHandle(HttpServletRequest request,
@@ -45,8 +48,11 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private Bucket buildBucket(String username) {
-        // 20 requests per minute per user
-        Bandwidth limit = Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)));
-        return Bucket.builder().addLimit(limit).build();
+        Tier tier = userRepository.findByUsername(username)
+                .map(User::getTier)
+                .orElse(Tier.FREE);
+
+        RateLimitPolicy policy = RateLimitPolicy.resolvePlanFromTier(tier);
+        return Bucket.builder().addLimit(policy.getLimit()).build();
     }
 }
