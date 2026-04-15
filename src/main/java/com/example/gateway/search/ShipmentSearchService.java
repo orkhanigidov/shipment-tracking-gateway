@@ -9,10 +9,11 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ShipmentSearchService {
+public class ShipmentSearchService implements ShipmentIndexer {
 
     private final ShipmentSearchRepository searchRepository;
 
+    @Override
     public void index(ShipmentDocument document) {
         searchRepository.save(document);
         log.debug("Indexed shipment {} in Elasticsearch", document.getTrackingNumber());

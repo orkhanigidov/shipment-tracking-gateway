@@ -10,7 +10,7 @@ import com.example.gateway.model.Shipment;
 import com.example.gateway.model.ShipmentStatus;
 import com.example.gateway.repository.ShipmentRepository;
 import com.example.gateway.search.ShipmentDocument;
-import com.example.gateway.search.ShipmentSearchService;
+import com.example.gateway.search.ShipmentIndexer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TrackingService {
 
     private final ShipmentRepository shipmentRepository;
-    private final ShipmentSearchService searchService;
+    private final ShipmentIndexer shipmentIndexer;
     private final CarrierAdapterRegistry registry;
 
     @Transactional
@@ -40,7 +40,7 @@ public class TrackingService {
         shipment.setDestination(request.getDestination());
         shipmentRepository.save(shipment);
 
-        searchService.index(new ShipmentDocument(
+        shipmentIndexer.index(new ShipmentDocument(
                 shipment.getTrackingNumber(),
                 shipment.getCarrier().name(),
                 shipment.getStatus().name(),
