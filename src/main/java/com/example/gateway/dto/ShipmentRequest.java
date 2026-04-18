@@ -1,13 +1,11 @@
 package com.example.gateway.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.example.gateway.model.Carrier;
 
-@Getter
-@Setter
-public class ShipmentRequest {
-    private String trackingNumber;
-    private String carrier;
-    private String origin;
-    private String destination;
+public record ShipmentRequest(
+        String trackingNumber,
+        Carrier carrier,
+        String origin,
+        String destination
+) {
 }

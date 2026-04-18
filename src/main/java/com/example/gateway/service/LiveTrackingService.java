@@ -29,13 +29,13 @@ public class LiveTrackingService {
         CarrierAdapter adapter = registry.get(shipment.getCarrier().name());
         TrackingResult result = adapter.track(trackingNumber);
 
-        shipment.setStatus(result.getStatus());
+        shipment.setStatus(result.shipmentStatus());
         shipmentRepository.save(shipment);
 
         return new TrackingResponse(
-                result.getTrackingNumber(), result.getCarrier(), result.getStatus(),
-                result.getCurrentLocation(), result.getEstimatedDelivery(),
-                result.getLastUpdate(), shipment.getOrigin(), shipment.getDestination()
+                result.trackingNumber(), result.carrier(), result.shipmentStatus(),
+                result.currentLocation(), result.estimatedDelivery(),
+                result.lastUpdate(), shipment.getOrigin(), shipment.getDestination()
         );
     }
 }

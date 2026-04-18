@@ -62,20 +62,18 @@ public abstract class BaseIntegrationTest {
     @BeforeEach
     void obtainToken() {
         if (bearerToken == null) {
-            TokenRequest req = new TokenRequest();
-            req.setUsername("alice");
-            req.setApiKey("key-alice-001");
+            TokenRequest req = new TokenRequest("alice", "key-alice-001");
 
             ResponseEntity<TokenResponse> response = restTemplate.postForEntity("/auth/token", req, TokenResponse.class);
 
-            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null || response.getBody().getToken() == null) {
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null || response.getBody().token() == null) {
                 throw new IllegalStateException(
                         "Failed to obtain JWT token for tests! Status: " + response.getStatusCode() +
                                 ". Please check the PostgreSQL connection and Auth logic."
                 );
             }
 
-            bearerToken = "Bearer " + response.getBody().getToken();
+            bearerToken = "Bearer " + response.getBody().token();
         }
     }
 

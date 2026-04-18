@@ -1,5 +1,6 @@
 package com.example.gateway.carrier;
 
+import com.example.gateway.model.Carrier;
 import com.example.gateway.model.ShipmentStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ public class FedExAdapter implements CarrierAdapter {
 
     @Override
     public String getCarrierCode() {
-        return "FedEx";
+        return Carrier.FedEx.name();
     }
 
     @Override
@@ -28,7 +29,7 @@ public class FedExAdapter implements CarrierAdapter {
         int idx = Math.abs(trackingNumber.hashCode()) % STATUSES.size();
         return new TrackingResult(
                 trackingNumber,
-                "FedEx",
+                Carrier.FedEx,
                 STATUSES.get(idx),
                 "New York, USA",
                 LocalDate.now().plusDays(1).toString(),

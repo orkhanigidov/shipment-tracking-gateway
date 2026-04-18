@@ -29,7 +29,7 @@ public class AuthController {
     })
     @PostMapping("/token")
     public TokenResponse token(@RequestBody TokenRequest request) {
-        return authService.authenticate(request.getUsername(), request.getApiKey());
+        return authService.authenticate(request.username(), request.apiKey());
     }
 
     @Operation(summary = "Refresh a JWT token", description = "Provides a new access and refresh token pair using a valid refresh token")
@@ -39,6 +39,6 @@ public class AuthController {
     })
     @PostMapping("/refresh")
     public TokenResponse refresh(@RequestBody RefreshTokenRequest request) {
-        return authService.refreshToken(request.getRefreshToken());
+        return authService.refreshToken(request.refreshToken());
     }
 }

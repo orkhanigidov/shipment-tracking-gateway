@@ -1,6 +1,7 @@
 package com.example.gateway;
 
 import com.example.gateway.dto.ShipmentRequest;
+import com.example.gateway.model.Carrier;
 import com.example.gateway.model.Shipment;
 import com.example.gateway.model.ShipmentStatus;
 import com.example.gateway.repository.ShipmentRepository;
@@ -34,11 +35,7 @@ public class ShipmentRegistrationServiceTest {
 
     @Test
     void register_ShouldSaveAndIndex() {
-        ShipmentRequest request = new ShipmentRequest();
-        request.setTrackingNumber("DHL123");
-        request.setCarrier("DHL");
-        request.setOrigin("Hamburg");
-        request.setDestination("Berlin");
+        ShipmentRequest request = new ShipmentRequest("DHL123", Carrier.DHL, "Hamburg", "Berlin");
 
         when(shipmentRepository.findByTrackingNumber("DHL123")).thenReturn(Optional.empty());
 
@@ -54,8 +51,7 @@ public class ShipmentRegistrationServiceTest {
 
     @Test
     void register_ShouldThrowExceptionWhenAlreadyExists() {
-        ShipmentRequest request = new ShipmentRequest();
-        request.setTrackingNumber("DHL123");
+        ShipmentRequest request = new ShipmentRequest("DHL123", Carrier.DHL, null, null);
 
         when(shipmentRepository.findByTrackingNumber("DHL123")).thenReturn(Optional.of(new Shipment()));
 

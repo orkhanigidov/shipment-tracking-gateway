@@ -34,7 +34,7 @@ public class TrackingController {
     @ResponseStatus(HttpStatus.CREATED)
     public TrackingResponse register(@RequestBody ShipmentRequest request) {
         registrationService.register(request);
-        return liveTrackingService.getTracking(request.getTrackingNumber());
+        return liveTrackingService.getTracking(request.trackingNumber());
     }
 
     @Operation(summary = "Track a shipment", description = "Returns cached (Redis, TTL 5 min) tracking status for the given tracking number")

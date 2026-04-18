@@ -1,5 +1,6 @@
 package com.example.gateway.carrier;
 
+import com.example.gateway.model.Carrier;
 import com.example.gateway.model.ShipmentStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class DhlAdapter implements CarrierAdapter {
 
     @Override
     public String getCarrierCode() {
-        return "DHL";
+        return Carrier.DHL.name();
     }
 
     @Override
@@ -34,7 +35,7 @@ public class DhlAdapter implements CarrierAdapter {
         int idx = Math.abs(trackingNumber.hashCode()) % STATUSES.size();
         return new TrackingResult(
                 trackingNumber,
-                "DHL",
+                Carrier.DHL,
                 STATUSES.get(idx),
                 LOCATIONS.get(idx),
                 LocalDate.now().plusDays(2).toString(),

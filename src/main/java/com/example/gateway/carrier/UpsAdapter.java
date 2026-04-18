@@ -1,5 +1,6 @@
 package com.example.gateway.carrier;
 
+import com.example.gateway.model.Carrier;
 import com.example.gateway.model.ShipmentStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ public class UpsAdapter implements CarrierAdapter {
 
     @Override
     public String getCarrierCode() {
-        return "UPS";
+        return Carrier.UPS.name();
     }
 
     @Override
@@ -28,7 +29,7 @@ public class UpsAdapter implements CarrierAdapter {
         int idx = Math.abs(trackingNumber.hashCode()) % STATUSES.size();
         return new TrackingResult(
                 trackingNumber,
-                "UPS",
+                Carrier.UPS,
                 STATUSES.get(idx),
                 "Atlanta, USA",
                 LocalDate.now().plusDays(3).toString(),

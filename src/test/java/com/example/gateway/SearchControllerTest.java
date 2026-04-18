@@ -1,6 +1,7 @@
 package com.example.gateway;
 
 import com.example.gateway.dto.ShipmentRequest;
+import com.example.gateway.model.Carrier;
 import com.example.gateway.search.ShipmentDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,11 +16,7 @@ public class SearchControllerTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setupData() throws InterruptedException {
-        ShipmentRequest shipmentReq = new ShipmentRequest();
-        shipmentReq.setTrackingNumber("ES-SEARCH-001");
-        shipmentReq.setCarrier("DHL");
-        shipmentReq.setOrigin("Hamburg");
-        shipmentReq.setDestination("Berlin");
+        ShipmentRequest shipmentReq = new ShipmentRequest("ES-SEARCH-001", Carrier.DHL, "Hamburg", "Berlin");
 
         restTemplate.exchange("/shipments", HttpMethod.POST, new HttpEntity<>(shipmentReq, authHeaders()), String.class);
 

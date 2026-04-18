@@ -22,16 +22,16 @@ public class ShipmentRegistrationService {
 
     @Transactional
     public Shipment register(ShipmentRequest request) {
-        if (shipmentRepository.findByTrackingNumber(request.getTrackingNumber()).isPresent()) {
-            throw new ShipmentAlreadyExistsException(request.getTrackingNumber());
+        if (shipmentRepository.existsByTrackingNumber(request.trackingNumber())) {
+            throw new ShipmentAlreadyExistsException(request.trackingNumber());
         }
 
         Shipment shipment = new Shipment();
-        shipment.setTrackingNumber(request.getTrackingNumber());
-        shipment.setCarrier(Carrier.valueOf(request.getCarrier().toUpperCase()));
+        shipment.setTrackingNumber(request.trackingNumber());
+        shipment.setCarrier(Carrier.valueOf(request.carrier().name()));
         shipment.setStatus(ShipmentStatus.REGISTERED);
-        shipment.setOrigin(request.getOrigin());
-        shipment.setDestination(request.getDestination());
+        shipment.setOrigin(request.origin());
+        shipment.setDestination(request.destination());
         shipmentRepository.save(shipment);
 
         shipmentIndexer.index(new ShipmentDocument(
@@ -42,7 +42,7 @@ public class ShipmentRegistrationService {
                 shipment.getDestination()
         ));
 
-        log.info("Registered shipment {} via {}", request.getTrackingNumber(), request.getCarrier());
+        log.info("Registered shipment {} via {}", request.trackingNumber(), request.carrier());
         return shipment;
     }
 }
