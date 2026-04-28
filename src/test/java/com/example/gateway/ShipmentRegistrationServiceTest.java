@@ -14,8 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,7 +35,7 @@ public class ShipmentRegistrationServiceTest {
     void register_ShouldSaveAndIndex() {
         ShipmentRequest request = new ShipmentRequest("DHL123", Carrier.DHL, "Hamburg", "Berlin");
 
-        when(shipmentRepository.findByTrackingNumber("DHL123")).thenReturn(Optional.empty());
+        when(shipmentRepository.existsByTrackingNumber("DHL123")).thenReturn(false);
 
         Shipment response = registrationService.register(request);
 
@@ -53,7 +51,7 @@ public class ShipmentRegistrationServiceTest {
     void register_ShouldThrowExceptionWhenAlreadyExists() {
         ShipmentRequest request = new ShipmentRequest("DHL123", Carrier.DHL, null, null);
 
-        when(shipmentRepository.findByTrackingNumber("DHL123")).thenReturn(Optional.of(new Shipment()));
+        when(shipmentRepository.existsByTrackingNumber("DHL123")).thenReturn(true);
 
         assertThrows(ShipmentAlreadyExistsException.class, () -> registrationService.register(request));
 

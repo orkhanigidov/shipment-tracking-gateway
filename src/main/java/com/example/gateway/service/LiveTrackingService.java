@@ -26,7 +26,7 @@ public class LiveTrackingService {
         Shipment shipment = shipmentRepository.findByTrackingNumber(trackingNumber)
                 .orElseThrow(() -> new ShipmentNotFoundException(trackingNumber));
 
-        CarrierAdapter adapter = registry.get(shipment.getCarrier().name());
+        CarrierAdapter adapter = registry.get(shipment.getCarrier());
         TrackingResult result = adapter.track(trackingNumber);
 
         shipment.setStatus(result.shipmentStatus());

@@ -32,7 +32,7 @@ public class SearchControllerTest extends BaseIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().length).isGreaterThanOrEqualTo(1);
-        assertThat(response.getBody()[0].getOrigin()).contains("Hamburg");
+        assertThat(response.getBody()[0].origin()).contains("Hamburg");
     }
 
     @Test
@@ -43,7 +43,7 @@ public class SearchControllerTest extends BaseIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().length).isGreaterThanOrEqualTo(1);
-        assertThat(response.getBody()[0].getCarrier()).isEqualTo("DHL");
+        assertThat(response.getBody()[0].carrier()).isEqualTo("DHL");
     }
 
     @Test
@@ -54,6 +54,6 @@ public class SearchControllerTest extends BaseIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().length).isGreaterThanOrEqualTo(1);
-        assertThat(response.getBody()[0].getStatus()).isEqualTo("REGISTERED");
+        assertThat(response.getBody()[0].status()).isEqualTo("REGISTERED");
     }
 }

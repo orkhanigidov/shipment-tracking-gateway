@@ -1,27 +1,22 @@
 package com.example.gateway.carrier;
 
+import com.example.gateway.model.Carrier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @Component
+@RequiredArgsConstructor
 public class CarrierAdapterRegistry {
 
-    private final Map<String, CarrierAdapter> adapters;
+    private final DhlAdapter dhlAdapter;
+    private final FedExAdapter fedExAdapter;
+    private final UpsAdapter upsAdapter;
 
-    public CarrierAdapterRegistry(List<CarrierAdapter> adapterList) {
-        this.adapters = adapterList.stream()
-                .collect(Collectors.toMap(CarrierAdapter::getCarrierCode, Function.identity()));
-    }
-
-    public CarrierAdapter get(String carrierCode) {
-        CarrierAdapter adapter = adapters.get(carrierCode.toUpperCase());
-        if (adapter == null) {
-            throw new IllegalArgumentException("Unknown carrier: " + carrierCode);
-        }
-        return adapter;
+    public CarrierAdapter get(Carrier carrier) {
+        return switch (carrier) {
+            case DHL -> dhlAdapter;
+            case FedEx -> fedExAdapter;
+            case UPS -> upsAdapter;
+        };
     }
 }

@@ -16,7 +16,7 @@ public class ShipmentSearchService implements ShipmentIndexer {
     @Override
     public void index(ShipmentDocument document) {
         searchRepository.save(document);
-        log.debug("Indexed shipment {} in Elasticsearch", document.getTrackingNumber());
+        log.debug("Indexed shipment {} in Elasticsearch", document.trackingNumber());
     }
 
     public List<ShipmentDocument> searchByLocation(String query) {

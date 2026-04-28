@@ -47,7 +47,7 @@ public class LiveTrackingServiceTest {
         savedShipment.setStatus(ShipmentStatus.REGISTERED);
 
         when(shipmentRepository.findByTrackingNumber("DHL123")).thenReturn(Optional.of(savedShipment));
-        when(registry.get("DHL")).thenReturn(carrierAdapter);
+        when(registry.get(Carrier.DHL)).thenReturn(carrierAdapter);
         when(carrierAdapter.track("DHL123"))
                 .thenReturn(new TrackingResult("DHL123", Carrier.DHL, ShipmentStatus.IN_TRANSIT, "Frankfurt", LocalDate.now().toString(), LocalDate.now().toString()));
 
