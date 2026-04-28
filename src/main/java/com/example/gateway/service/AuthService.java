@@ -6,6 +6,7 @@ import com.example.gateway.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,10 +17,11 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     public TokenResponse authenticate(String username, String apiKey) {
         userRepository.findByUsername(username)
-                .filter(user -> user.getApiKey().equals(apiKey))
+                .filter(user -> passwordEncoder.matches(apiKey, user.getApiKey()))
                 .orElseThrow(() -> {
                     log.warn("Failed auth attempt for username={}", username);
                     return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
