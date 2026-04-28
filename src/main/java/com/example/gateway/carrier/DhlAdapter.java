@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class DhlAdapter implements CarrierAdapter {
+public final class DhlAdapter implements CarrierAdapter {
 
     private static final List<ShipmentStatus> STATUSES = List.of(
             ShipmentStatus.IN_TRANSIT,

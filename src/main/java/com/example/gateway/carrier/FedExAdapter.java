@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class FedExAdapter implements CarrierAdapter {
+public final class FedExAdapter implements CarrierAdapter {
 
     private static final List<ShipmentStatus> STATUSES = List.of(
             ShipmentStatus.REGISTERED,

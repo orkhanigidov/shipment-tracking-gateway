@@ -1,6 +1,7 @@
 package com.example.gateway.carrier;
 
-public interface CarrierAdapter {
+public sealed interface CarrierAdapter permits DhlAdapter, FedExAdapter, UpsAdapter {
     String getCarrierCode();
+
     TrackingResult track(String trackingNumber);
 }
