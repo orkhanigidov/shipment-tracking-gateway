@@ -3,6 +3,8 @@ package com.example.gateway.dto;
 import com.example.gateway.model.Carrier;
 import com.example.gateway.model.ShipmentStatus;
 
+import java.io.Serializable;
+
 public record TrackingResponse(
         String trackingNumber,
         Carrier carrier,
@@ -12,5 +14,5 @@ public record TrackingResponse(
         String lastUpdate,
         String origin,
         String destination
-) {
+) implements Serializable {
 }
