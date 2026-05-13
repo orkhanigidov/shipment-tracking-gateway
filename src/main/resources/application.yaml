@@ -21,12 +21,12 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 300000 # 5 minutes
+      time-to-live: 5m
   elasticsearch:
     uris: http://${ES_HOST:localhost}:${ES_PORT:9200}
 
 app:
   jwt:
     secret: ${JWT_SECRET}
-    expiration-ms: 3600000
-    refresh-expiration-ms: 604800000 # 7 days
+    expiration: 1h
+    refresh-expiration: 7d

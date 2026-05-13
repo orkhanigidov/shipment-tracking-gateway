@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 
 @Slf4j
@@ -19,28 +20,28 @@ public class JwtUtil {
     @Value("${app.jwt.secret}")
     private String secret;
 
-    @Value("${app.jwt.expiration-ms:3600000}")
-    private long expirationMs;
+    @Value("${app.jwt.expiration}")
+    private Duration expiration;
 
-    @Value("${app.jwt.refresh-expiration-ms:604800000}")
-    private long refreshExpirationMs;
+    @Value("${app.jwt.refresh-expiration}")
+    private Duration refreshExpiration;
 
-    private String buildToken(String username, long expiration) {
+    private String buildToken(String username, Duration duration) {
         Key key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(new Date(System.currentTimeMillis() + duration.toMillis()))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateToken(String username) {
-        return buildToken(username, expirationMs);
+        return buildToken(username, expiration);
     }
 
     public String generateRefreshToken(String username) {
-        return buildToken(username, refreshExpirationMs);
+        return buildToken(username, refreshExpiration);
     }
 
     public String extractUsername(String token) {
