@@ -1,5 +1,6 @@
-package com.example.gateway.security;
+package com.example.gateway.config;
 
+import com.example.gateway.security.JwtAuthFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
