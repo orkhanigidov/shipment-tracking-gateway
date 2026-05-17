@@ -3,13 +3,12 @@ package com.example.gateway.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.time.Duration;
 import java.util.Date;
 
@@ -27,12 +26,12 @@ public class JwtUtil {
     private Duration refreshExpiration;
 
     private String buildToken(String username, Duration duration) {
-        Key key = Keys.hmacShaKeyFor(secret.getBytes());
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + duration.toMillis()))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + duration.toMillis()))
+                .signWith(key)
                 .compact();
     }
 
@@ -59,11 +58,11 @@ public class JwtUtil {
     }
 
     private Claims parseClaims(String token) {
-        Key key = Keys.hmacShaKeyFor(secret.getBytes());
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
+        return Jwts.parser()
+                .verifyWith(key)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
