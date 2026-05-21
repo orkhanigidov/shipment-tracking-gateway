@@ -18,6 +18,7 @@ public class LiveTrackingService {
 
     private final ShipmentRepository shipmentRepository;
     private final CarrierAdapterRegistry registry;
+    private final ShipmentStatusUpdater statusUpdater;
 
     @Cacheable(value = "tracking", key = "#trackingNumber")
     public TrackingResponse getTracking(String trackingNumber) {
@@ -29,8 +30,7 @@ public class LiveTrackingService {
         CarrierAdapter adapter = registry.get(shipment.getCarrier());
         TrackingResult result = adapter.track(trackingNumber);
 
-        shipment.setStatus(result.shipmentStatus());
-        shipmentRepository.save(shipment);
+        statusUpdater.updateShipmentStatus(shipment, result.shipmentStatus());
 
         return new TrackingResponse(
                 result.trackingNumber(), result.carrier(), result.shipmentStatus(),
