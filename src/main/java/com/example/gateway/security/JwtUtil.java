@@ -1,5 +1,6 @@
 package com.example.gateway.security;
 
+import com.example.gateway.model.Tier;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -25,26 +26,31 @@ public class JwtUtil {
     @Value("${app.jwt.refresh-expiration}")
     private Duration refreshExpiration;
 
-    private String buildToken(String username, Duration duration) {
+    private String buildToken(String username, Tier tier, Duration duration) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
         return Jwts.builder()
                 .subject(username)
+                .claim("tier", tier)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + duration.toMillis()))
                 .signWith(key)
                 .compact();
     }
 
-    public String generateToken(String username) {
-        return buildToken(username, expiration);
+    public String generateToken(String username, Tier tier) {
+        return buildToken(username, tier, expiration);
     }
 
-    public String generateRefreshToken(String username) {
-        return buildToken(username, refreshExpiration);
+    public String generateRefreshToken(String username, Tier tier) {
+        return buildToken(username, tier, refreshExpiration);
     }
 
     public String extractUsername(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    public Tier extractTier(String token) {
+        return (Tier) parseClaims(token).get("tier");
     }
 
     public boolean isValid(String token) {

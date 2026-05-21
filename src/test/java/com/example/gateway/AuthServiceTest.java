@@ -1,6 +1,7 @@
 package com.example.gateway;
 
 import com.example.gateway.dto.TokenResponse;
+import com.example.gateway.model.Tier;
 import com.example.gateway.model.User;
 import com.example.gateway.repository.UserRepository;
 import com.example.gateway.security.JwtUtil;
@@ -43,8 +44,8 @@ public class AuthServiceTest {
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches("raw-secret-key", "$2a$12$mocked_bcrypt_hash_string")).thenReturn(true);
-        when(jwtUtil.generateToken("alice")).thenReturn("mock-access-token");
-        when(jwtUtil.generateRefreshToken("alice")).thenReturn("mock-refresh-token");
+        when(jwtUtil.generateToken("alice", any(Tier.class))).thenReturn("mock-access-token");
+        when(jwtUtil.generateRefreshToken("alice", any(Tier.class))).thenReturn("mock-refresh-token");
 
         TokenResponse response = authService.authenticate("alice", "raw-secret-key");
 
@@ -65,6 +66,6 @@ public class AuthServiceTest {
 
         assertThrows(ResponseStatusException.class, () -> authService.authenticate("alice", "wrong-key"));
 
-        verify(jwtUtil, never()).generateToken(anyString());
+        verify(jwtUtil, never()).generateToken(anyString(), any(Tier.class));
     }
 }

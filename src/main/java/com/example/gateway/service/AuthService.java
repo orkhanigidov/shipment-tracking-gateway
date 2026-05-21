@@ -1,6 +1,8 @@
 package com.example.gateway.service;
 
 import com.example.gateway.dto.TokenResponse;
+import com.example.gateway.model.Tier;
+import com.example.gateway.model.User;
 import com.example.gateway.repository.UserRepository;
 import com.example.gateway.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -20,22 +22,24 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public TokenResponse authenticate(String username, String apiKey) {
-        userRepository.findByUsername(username)
-                .filter(user -> passwordEncoder.matches(apiKey, user.getApiKey()))
+        User user = userRepository.findByUsername(username)
+                .filter(u -> passwordEncoder.matches(apiKey, u.getApiKey()))
                 .orElseThrow(() -> {
                     log.warn("Failed auth attempt for username={}", username);
                     return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
                 });
 
         log.info("Issued tokens for username={}", username);
-        return new TokenResponse(jwtUtil.generateToken(username), jwtUtil.generateRefreshToken(username));
+        Tier tier = user.getTier();
+        return new TokenResponse(jwtUtil.generateToken(username, tier), jwtUtil.generateRefreshToken(username, tier));
     }
 
     public TokenResponse refreshToken(String refreshToken) {
         if (refreshToken != null && jwtUtil.isValid(refreshToken)) {
             String username = jwtUtil.extractUsername(refreshToken);
             log.info("Refreshed tokens for username={}", username);
-            return new TokenResponse(jwtUtil.generateToken(username), jwtUtil.generateRefreshToken(username));
+            Tier tier = jwtUtil.extractTier(refreshToken);
+            return new TokenResponse(jwtUtil.generateToken(username, tier), jwtUtil.generateRefreshToken(username, tier));
         }
 
         log.warn("Failed token refresh attempt - invalid or expired token");

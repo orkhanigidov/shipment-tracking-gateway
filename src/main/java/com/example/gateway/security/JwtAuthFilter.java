@@ -1,5 +1,6 @@
 package com.example.gateway.security;
 
+import com.example.gateway.model.Tier;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,8 +30,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             if (jwtUtil.isValid(token)) {
                 String username = jwtUtil.extractUsername(token);
-                // store username as request attribute for rate limiter
+                Tier tier = jwtUtil.extractTier(token);
                 request.setAttribute("username", username);
+                request.setAttribute("tier", tier);
                 var auth = new UsernamePasswordAuthenticationToken(username, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }

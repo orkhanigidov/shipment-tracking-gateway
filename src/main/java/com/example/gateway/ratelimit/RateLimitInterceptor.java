@@ -1,7 +1,6 @@
 package com.example.gateway.ratelimit;
 
 import com.example.gateway.model.Tier;
-import com.example.gateway.model.User;
 import com.example.gateway.repository.UserRepository;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,11 +32,13 @@ public class RateLimitInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        Bucket bucket = buckets.computeIfAbsent(username, this::buildBucket);
+        String tierStr = (String) request.getAttribute("tier");
+        Tier tier = tierStr != null ? Tier.valueOf(tierStr) : Tier.FREE;
+
+        Bucket bucket = buckets.computeIfAbsent(username, k -> buildBucketForTier(tier));
 
         if (bucket.tryConsume(1)) {
-            response.addHeader("X-Rate-Limit-Remaining",
-                    String.valueOf(bucket.getAvailableTokens()));
+            response.addHeader("X-Rate-Limit-Remaining", String.valueOf(bucket.getAvailableTokens()));
             return true;
         }
 
@@ -47,11 +48,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    private Bucket buildBucket(String username) {
-        Tier tier = userRepository.findByUsername(username)
-                .map(User::getTier)
-                .orElse(Tier.FREE);
-
+    private Bucket buildBucketForTier(Tier tier) {
         RateLimitPolicy policy = RateLimitPolicy.resolvePlanFromTier(tier);
         return Bucket.builder().addLimit(policy.getLimit()).build();
     }
