@@ -7,6 +7,7 @@ import com.example.gateway.model.ShipmentStatus;
 import com.example.gateway.repository.ShipmentRepository;
 import com.example.gateway.search.ShipmentDocument;
 import com.example.gateway.search.ShipmentIndexer;
+import com.example.gateway.search.ShipmentVectorIndexer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class ShipmentRegistrationService {
 
     private final ShipmentRepository shipmentRepository;
     private final ShipmentIndexer shipmentIndexer;
+    private final ShipmentVectorIndexer shipmentVectorIndexer;
 
     @Transactional
     public Shipment register(ShipmentRequest request) {
@@ -34,13 +36,16 @@ public class ShipmentRegistrationService {
         shipment.setDestination(request.destination());
         shipmentRepository.save(shipment);
 
-        shipmentIndexer.index(new ShipmentDocument(
+        ShipmentDocument doc = new ShipmentDocument(
                 shipment.getTrackingNumber(),
                 shipment.getCarrier().name(),
                 shipment.getStatus().name(),
                 shipment.getOrigin(),
                 shipment.getDestination()
-        ));
+        );
+
+        shipmentIndexer.index(doc);
+        shipmentVectorIndexer.index(doc);
 
         log.info("Registered shipment {} via {}", request.trackingNumber(), request.carrier());
         return shipment;

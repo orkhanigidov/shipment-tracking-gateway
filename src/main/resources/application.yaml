@@ -24,6 +24,26 @@ spring:
       time-to-live: 5m
   elasticsearch:
     uris: http://${ES_HOST:localhost}:${ES_PORT:9200}
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: never   # Flyway handles it via V3 migration
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+      embedding:
+        options:
+          model: text-embedding-3-small
+    vectorstore:
+      elasticsearch:
+        index-name: shipments-vectors
+        dimensions: 1536          # matches text-embedding-3-small
+        similarity: cosine
+        initialize-schema: true   # creates the ES index on first run
 
 app:
   jwt:
