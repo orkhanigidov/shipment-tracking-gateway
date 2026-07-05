@@ -1,26 +1,24 @@
 package com.example.gateway.ratelimit;
 
 import com.example.gateway.model.Tier;
-import com.example.gateway.repository.UserRepository;
-import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.Duration;
+import java.time.Instant;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class RateLimitInterceptor implements HandlerInterceptor {
 
-    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
-    private final UserRepository userRepository;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public boolean preHandle(HttpServletRequest request,
@@ -35,21 +33,47 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         String tierStr = (String) request.getAttribute("tier");
         Tier tier = tierStr != null ? Tier.valueOf(tierStr) : Tier.FREE;
 
-        Bucket bucket = buckets.computeIfAbsent(username, k -> buildBucketForTier(tier));
+        long limit = getLimitForTier(tier);
 
-        if (bucket.tryConsume(1)) {
-            response.addHeader("X-Rate-Limit-Remaining", String.valueOf(bucket.getAvailableTokens()));
-            return true;
+        long currentMinuteWindow = Instant.now().getEpochSecond() / 60;
+        String redisKey = "ratelimit:" + username + ":" + currentMinuteWindow;
+
+        Long currentCount = redisTemplate.opsForValue().increment(redisKey);
+
+        if (currentCount == null) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.getWriter().write("Rate limiting service unavailable.");
+            return false;
         }
 
-        log.warn("Rate limit exceeded for user={}", username);
-        response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-        response.getWriter().write("Rate limit exceeded. Try again in a minute.");
-        return false;
+        if (currentCount == 1) {
+            redisTemplate.expire(redisKey, Duration.ofMinutes(2));
+        } else {
+            Long ttl = redisTemplate.getExpire(redisKey);
+            if (ttl == -1) {
+                redisTemplate.expire(redisKey, Duration.ofMinutes(2));
+            }
+        }
+
+        long remainingTokens = limit - currentCount;
+
+        if (remainingTokens < 0) {
+            log.warn("Rate limit exceeded for user={}", username);
+            response.addHeader("X-Rate-Limit-Remaining", "0");
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            response.getWriter().write("Rate limit exceeded. Try again in a minute.");
+            return false;
+        }
+
+        response.addHeader("X-Rate-Limit-Remaining", String.valueOf(remainingTokens));
+        return true;
     }
 
-    private Bucket buildBucketForTier(Tier tier) {
-        RateLimitPolicy policy = RateLimitPolicy.resolvePlanFromTier(tier);
-        return Bucket.builder().addLimit(policy.getLimit()).build();
+    private long getLimitForTier(Tier tier) {
+        return switch (tier) {
+            case PREMIUM -> 100;
+            case ENTERPRISE -> 1000;
+            default -> 10;
+        };
     }
 }
