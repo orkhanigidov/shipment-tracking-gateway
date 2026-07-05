@@ -25,7 +25,7 @@ Client
   │       │
   │  [JwtAuthFilter] ─── validates Bearer token
   │       │
-  │  [RateLimitInterceptor] ─── dynamic limits via RateLimitPolicy (Free, Premium, Enterprise)
+  │  [RateLimitInterceptor] ─── dynamic limits via atomic Redis keys per user/minute
   │       │
   │  [LiveTrackingService]
   │       │   @Cacheable("tracking") ─── Redis, TTL 5 min
@@ -54,7 +54,7 @@ Client
 |--------------------|-----------------------------------------------------------------|
 | Language & Runtime | Java 17, Spring Boot 3.5                                        |
 | Authentication     | Spring Security, JWT                                            |
-| Rate Limiting      | Bucket4j — tier-based, in-memory per user                       |
+| Rate Limiting      | Redis — atomic fixed-window counter (`INCR`) per user           |
 | Caching            | Redis — tracking responses, TTL 5 min                           |
 | Database           | PostgreSQL + Flyway migrations                                  |
 | Keyword Search     | Elasticsearch — multi-field shipment search                     |
@@ -268,7 +268,8 @@ The assistant uses the previous exchange to understand "it" without needing the 
 
 ### Rate Limiting
 
-Users are rate-limited based on their assigned `Tier`. The limit resets every minute.
+Users are rate-limited based on their assigned `Tier`. Requests are tracked inside distributed Redis windows that
+automatically reset at the boundary of every minute.
 
 | Tier       | Requests / minute |
 |------------|-------------------|
@@ -389,7 +390,5 @@ Every registered shipment is indexed in two ways simultaneously:
 ## Known Limitations
 
 - Carrier adapters are mocked — no real external API calls are made
-- Rate limiting buckets are in-memory per JVM instance — they reset on app restart; for multi-instance deployments,
-  replace with Redis-backed Bucket4j
 - Spring AI vector search requires an OpenAI API key for embedding; the chat endpoints will fail gracefully if
   `OPENAI_API_KEY` is not set
